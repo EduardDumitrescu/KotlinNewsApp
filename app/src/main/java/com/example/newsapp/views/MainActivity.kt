@@ -63,14 +63,6 @@ class MainActivity : AppCompatActivity(),
         isAtBottom.onValueChanged = { oldValue, newValue ->
             if (newValue) {
                 isAtBottom.value = false
-
-                if (viewModel.articlesToShow == 200) {
-                    viewModel.pageNumber += 1
-                    viewModel.articlesToShow = 0
-                }
-
-                viewModel.articlesToShow += 10
-
                 getArticles()
                 //Toast.makeText(this, "It's at bottom", Toast.LENGTH_SHORT).show()
             }
@@ -88,7 +80,7 @@ class MainActivity : AppCompatActivity(),
         //mEmptyStateTextView = findViewById(R.id.empty_view)
         //articlesRecycleView.empty_view = mEmptyStateTextView
 
-        mAdapter = ArticlesAdapter(mutableListOf<Article>(), isAtBottom)
+        mAdapter = ArticlesAdapter(viewModel.getArticles().value!!, isAtBottom)
         mLayoutManager = LinearLayoutManager(applicationContext)
         articlesRecycleView.layoutManager = mLayoutManager
 
@@ -156,12 +148,22 @@ class MainActivity : AppCompatActivity(),
             getString(R.string.settings_order_by_default)
         )
 
-        viewModel.getFromServer(viewModel.pageNumber, viewModel.articlesToShow, orderBy!!, filterBy!!)
+        viewModel.loadArticles(orderBy!!, filterBy!!)
         viewModel.getArticles().observe(this, Observer {
             val articles: List<Article> = it
 
-            if (articles != null && articles.isNotEmpty())
+            if (articles.isNotEmpty()) {
+                //this.runOnUiThread { mAdapter.notifyDataSetChanged() }
+                /* val lel = Thread(Runnable {mAdapter.notifyDataSetChanged()})
+                 lel.run()*/
+                //lel.start()
+                //Runnable { mAdapter.notifyDataSetChanged() }
                 mAdapter.addItems(articles)
+                val h = this.window.decorView.handler
+                h.post {
+                    mAdapter.notifyDataSetChanged()
+                }
+            }
 
             loadingSpinner.visibility = View.GONE
         })

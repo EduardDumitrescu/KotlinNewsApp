@@ -14,12 +14,20 @@ object ArticlesDataSource {
         NewsWebService.create()
     }
 
-    fun getArticlesResponse(page: Int = 1, pageSize: Int = 10, orderBy: String = "newest", filterBy: String = ""): MutableLiveData<MutableList<Article>> {
-        var articlesList: MutableLiveData<MutableList<Article>> = MutableLiveData()
+
+    val articlesList: MutableLiveData<MutableList<Article>> by lazy {
+        val list = MutableLiveData<MutableList<Article>>()
+        list.value = mutableListOf<Article>()
+        list
+    }
+
+
+    fun loadArticlesResponse(page: Int = 1, pageSize: Int = 10, orderBy: String = "newest", filterBy: String = "") {
+
         newsService.getArticles("test", filterBy, "contributor", orderBy, "thumbnail", pageSize, page)
             .enqueue(object : Callback<NewsResponse> {
                 override fun onFailure(call: Call<NewsResponse>, t: Throwable) {
-                    articlesList.value = null
+                    //articlesList.value = null
                 }
 
                 override fun onResponse(call: Call<NewsResponse>, response: Response<NewsResponse>) {
@@ -27,6 +35,5 @@ object ArticlesDataSource {
                     articlesList.value = newsResponse.response.articles.toMutableList()
                 }
             })
-        return articlesList
     }
 }

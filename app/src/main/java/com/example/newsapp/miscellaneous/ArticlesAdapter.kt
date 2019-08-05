@@ -2,18 +2,13 @@ package com.example.newsapp.miscellaneous
 
 import android.content.Context
 import android.content.Intent
-import android.graphics.drawable.Drawable
 import android.net.Uri
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.CircularProgressDrawable
 import com.bumptech.glide.Glide
-import com.bumptech.glide.load.DataSource
-import com.bumptech.glide.load.engine.GlideException
-import com.bumptech.glide.request.RequestListener
 import com.example.newsapp.R
 import com.example.newsapp.models.Article
 import kotlinx.android.synthetic.main.article.view.*
@@ -29,7 +24,7 @@ class ArticlesAdapter(articleList: List<Article>, private val isAtBottom: Boolea
         private val outputDateFormat = SimpleDateFormat("yyyy-MM-dd  HH:mm", Locale.US)
     }
 
-    var articlesList: MutableList<Article>
+    var articlesList: MutableList<Article> = articleList.toMutableList()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val inflatedView: View = LayoutInflater.from(parent.context).inflate(R.layout.article, parent, false)
@@ -108,16 +103,13 @@ class ArticlesAdapter(articleList: List<Article>, private val isAtBottom: Boolea
 
     }
 
-    init {
-        articlesList = articleList.toMutableList()
-    }
-
     fun clearData() {
         for (index in (articlesList.size - 1) downTo 0) {
             articlesList.removeAt(index)
             //notifyItemRemoved(index)
         }
-        notifyDataSetChanged()
+        //Runnable { notifyDataSetChanged() }
+        //notifyDataSetChanged()
     }
 
     fun addItems(articles: List<Article>) {
@@ -127,6 +119,30 @@ class ArticlesAdapter(articleList: List<Article>, private val isAtBottom: Boolea
             articlesList.add(articles[index])
             //notifyItemInserted(index)
         }
-        notifyDataSetChanged()
+        /* //val h = Handler()
+
+          object: Handler() {
+             override fun close() {
+                 TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+             }
+
+             override fun flush() {
+                 TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+             }
+
+             override fun publish(p0: LogRecord?) {
+                 notifyDataSetChanged()
+                 TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+             }
+
+         }.run {  }
+ */
+
+        /*val t = Thread { notifyDataSetChanged() }
+
+        t.run()*/
+        //Runnable { notifyDataSetChanged() }
+
+        //notifyDataSetChanged()
     }
 }
