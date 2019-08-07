@@ -61,7 +61,7 @@ class MainActivity : AppCompatActivity(),
         viewModel.loadMoreArticles()
 
         isAtBottom = BooleanObserver()
-        isAtBottom.onValueChanged = { oldValue, newValue ->
+        isAtBottom.onValueChanged = { _, newValue ->
             if (newValue) {
                 isAtBottom.value = false
                 viewModel.loadMoreArticles()
