@@ -1,12 +1,9 @@
 package com.example.newsapp.views
 
 import android.Manifest
-import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
-import android.net.ConnectivityManager
-import android.net.NetworkInfo
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
@@ -25,6 +22,7 @@ import com.example.newsapp.miscellaneous.afterTextChanged
 import com.example.newsapp.models.Article
 import com.example.newsapp.repositories.ArticlesFileRepo
 import com.example.newsapp.viewModels.ArticleListViewModel
+import io.reactivex.disposables.Disposable
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity(),
@@ -38,6 +36,7 @@ class MainActivity : AppCompatActivity(),
         private const val ARTICLES_LOADER_ID = 1
     }
 
+    private lateinit var disposable: Disposable
     /** Adapter for the list of articles */
     private lateinit var mAdapter: ArticlesAdapter
 
@@ -55,27 +54,29 @@ class MainActivity : AppCompatActivity(),
 
         error_text.isVisible = false
 
-        search_bar.afterTextChanged {
-            mAdapter.clearData()
-            viewModel.loadArticles("newest", it, true)
-        }
+        search_bar.afterTextChanged(viewModel::setQuery)
+
+        viewModel.setOrder("newest")
+        viewModel.setQuery("")
+        viewModel.loadMoreArticles()
 
         isAtBottom = BooleanObserver()
         isAtBottom.onValueChanged = { oldValue, newValue ->
             if (newValue) {
                 isAtBottom.value = false
-                getArticles()
+                viewModel.loadMoreArticles()
             }
-        }
-
-        viewModel.articleList.subscribe {
-            mAdapter.addItems(it!!)
         }
 
         loading_spinner.isVisible = false
 
-        mAdapter = ArticlesAdapter(emptyList(), isAtBottom)
+        mAdapter = ArticlesAdapter(isAtBottom)
         mLayoutManager = LinearLayoutManager(applicationContext)
+
+
+        disposable = viewModel.getArticles().subscribe {
+            mAdapter.setArticles(it)
+        }
 
         articles_list.layoutManager = mLayoutManager
         articles_list.adapter = mAdapter
@@ -89,60 +90,41 @@ class MainActivity : AppCompatActivity(),
         // So we know when the user has adjusted the query settings
         prefs.registerOnSharedPreferenceChangeListener(this)
 
-        // Get a reference to the ConnectivityManager to check state of network connectivity
-        val cm: ConnectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-
-        // Get details on the currently active default data network
-        var networkInfo: NetworkInfo? = cm?.activeNetworkInfo
-
-        // If there is a network connection, fetch data
-        if (networkInfo != null && networkInfo.isConnectedOrConnecting) {
-            loading_spinner.isVisible = true
-            getArticles()
-
-        } else {
-            // Otherwise, display error. First, hide loading indicator so error message will be visible
-            loading_spinner.isVisible = false
-
-            // Update empty state with "no connection" error message
-            error_text.text = R.string.no_internet_connection.toString()
-
-            //loadFromInternal()
-        }
+//        // Get a reference to the ConnectivityManager to check state of network connectivity
+//        val cm: ConnectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+//
+//        // Get details on the currently active default data network
+//        var networkInfo: NetworkInfo? = cm?.activeNetworkInfo
+//
+//        // If there is a network connection, fetch data
+//        if (networkInfo != null && networkInfo.isConnectedOrConnecting) {
+//            loading_spinner.isVisible = true
+//            getArticles()
+//
+//        } else {
+//            // Otherwise, display error. First, hide loading indicator so error message will be visible
+//            loading_spinner.isVisible = false
+//
+//            // Update empty state with "no connection" error message
+//            error_text.text = R.string.no_internet_connection.toString()
+//
+//            //loadFromInternal()
+//        }
     }
 
     override fun onSharedPreferenceChanged(prefs: SharedPreferences, key: String) {
-        if (key == getString(R.string.settings_filter_by_key) || key == getString(R.string.settings_order_by_key)) {
+        if (key == getString(R.string.settings_order_by_key)) {
             // Clear the ListView as a new query will be kicked off
-            mAdapter.clearData()
+
 
             // Hide the empty state text view as the loading indicator will be displayed
 //            mEmptyStateTextView.visibility = View.GONE
 
             // Show the loading indicator while new data is being fetched
-            loading_spinner.isVisible = true
+            //loading_spinner.isVisible = true
 
-            getArticles()
+            viewModel.setOrder(prefs.getString("order_by", "newest")!!)
         }
-    }
-
-    private fun getArticles() {
-        val sharedPrefs: SharedPreferences = getSharedPreferences("filters", 0)
-
-        //PreferenceManager.getDefaultSharedPreferences(this)
-
-        val filterBy: String? = sharedPrefs.getString(
-            getString(R.string.settings_filter_by_key),
-            ""
-        )
-
-        val orderBy: String? = sharedPrefs.getString(
-            getString(R.string.settings_order_by_key),
-            getString(R.string.settings_order_by_default)
-        )
-
-        viewModel.loadArticles(orderBy!!, filterBy!!)
-        loading_spinner.isVisible = false
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -177,7 +159,7 @@ class MainActivity : AppCompatActivity(),
             Toast.makeText(this, "No local news saved", Toast.LENGTH_LONG).show()
         else {
             Toast.makeText(this, "Showing offline news", Toast.LENGTH_LONG).show()
-            mAdapter.addItems(cachedNews)
+            mAdapter.setArticles(cachedNews)
         }
     }
 
@@ -220,5 +202,11 @@ class MainActivity : AppCompatActivity(),
                 }
             }
         })
+    }
+
+
+    override fun onDestroy() {
+        super.onDestroy()
+        disposable.dispose()
     }
 }

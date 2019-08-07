@@ -16,7 +16,7 @@ import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.*
 
-class ArticlesAdapter(articleList: List<Article>, private val isAtBottom: BooleanObserver? = null) :
+class ArticlesAdapter(private val isAtBottom: BooleanObserver? = null) :
     RecyclerView.Adapter<ArticlesAdapter.ViewHolder>() {
 
     companion object {
@@ -24,7 +24,7 @@ class ArticlesAdapter(articleList: List<Article>, private val isAtBottom: Boolea
         private val outputDateFormat = SimpleDateFormat("yyyy-MM-dd  HH:mm", Locale.US)
     }
 
-    private var articlesList: MutableList<Article> = articleList.toMutableList()
+    private var articlesList: List<Article> = emptyList()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val inflatedView: View = LayoutInflater.from(parent.context).inflate(R.layout.article, parent, false)
@@ -104,18 +104,13 @@ class ArticlesAdapter(articleList: List<Article>, private val isAtBottom: Boolea
     }
 
     fun clearData() {
-        for (index in (articlesList.size - 1) downTo 0) {
-            articlesList.removeAt(index)
-        }
+        articlesList = emptyList()
         notifyDataSetChanged()
     }
 
-    fun addItems(articles: List<Article>) {
-        for (index in 0 until articles.size) {
-            if (articles[index] in articlesList)
-                continue
-            articlesList.add(articles[index])
-        }
+    fun setArticles(articles: List<Article>) {
+        articlesList = articles
+
         notifyDataSetChanged()
     }
 }
