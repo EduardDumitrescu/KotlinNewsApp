@@ -10,22 +10,22 @@ import android.net.NetworkInfo
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
-import android.view.View
-import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.Observer
+import androidx.core.view.isVisible
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.newsapp.R
 import com.example.newsapp.miscellaneous.ArticlesAdapter
 import com.example.newsapp.miscellaneous.BooleanObserver
+import com.example.newsapp.miscellaneous.afterTextChanged
 import com.example.newsapp.models.Article
 import com.example.newsapp.repositories.ArticlesFileRepo
 import com.example.newsapp.viewModels.ArticleListViewModel
+import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity(),
     SharedPreferences.OnSharedPreferenceChangeListener {
@@ -41,12 +41,6 @@ class MainActivity : AppCompatActivity(),
     /** Adapter for the list of articles */
     private lateinit var mAdapter: ArticlesAdapter
 
-    /** TextView that is displayed when the list is empty  */
-    private lateinit var mEmptyStateTextView: TextView
-
-    private lateinit var loadingSpinner: View
-
-    private lateinit var articlesRecycleView: RecyclerView
     private lateinit var mLayoutManager: LinearLayoutManager
 
     private lateinit var isAtBottom: BooleanObserver
@@ -59,33 +53,32 @@ class MainActivity : AppCompatActivity(),
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        error_text.isVisible = false
+
+        search_bar.afterTextChanged {
+            mAdapter.clearData()
+            viewModel.loadArticles("newest", it, true)
+        }
+
         isAtBottom = BooleanObserver()
         isAtBottom.onValueChanged = { oldValue, newValue ->
             if (newValue) {
                 isAtBottom.value = false
                 getArticles()
-                //Toast.makeText(this, "It's at bottom", Toast.LENGTH_SHORT).show()
             }
         }
 
-        loadingSpinner = findViewById(R.id.loading_spinner)
-        //loadingSpinner.visibility = View.GONE
+        viewModel.articleList.subscribe {
+            mAdapter.addItems(it!!)
+        }
 
-        articlesRecycleView = findViewById(R.id.list)
+        loading_spinner.isVisible = false
 
-        //articlesRecycleView.itemAnimator = SlideInLeftAnimator()
-
-        //setRecyclerViewScrollListener()
-
-        //mEmptyStateTextView = findViewById(R.id.empty_view)
-        //articlesRecycleView.empty_view = mEmptyStateTextView
-
-        mAdapter = ArticlesAdapter(viewModel.getArticles().value!!, isAtBottom)
+        mAdapter = ArticlesAdapter(emptyList(), isAtBottom)
         mLayoutManager = LinearLayoutManager(applicationContext)
-        articlesRecycleView.layoutManager = mLayoutManager
 
-        //articlesRecycleView.adapter = AlphaInAnimationAdapter(mAdapter)
-        articlesRecycleView.adapter = mAdapter
+        articles_list.layoutManager = mLayoutManager
+        articles_list.adapter = mAdapter
 
         // Obtain a reference to the SharedPreferences file for this app
         val prefs: SharedPreferences = getSharedPreferences("filters", 0)
@@ -104,17 +97,17 @@ class MainActivity : AppCompatActivity(),
 
         // If there is a network connection, fetch data
         if (networkInfo != null && networkInfo.isConnectedOrConnecting) {
-
+            loading_spinner.isVisible = true
             getArticles()
 
         } else {
             // Otherwise, display error. First, hide loading indicator so error message will be visible
-            loadingSpinner.visibility = View.GONE
+            loading_spinner.isVisible = false
 
             // Update empty state with "no connection" error message
-            //mEmptyStateTextView.setText(R.string.no_internet_connection)
+            error_text.text = R.string.no_internet_connection.toString()
 
-            loadFromInternal()
+            //loadFromInternal()
         }
     }
 
@@ -127,7 +120,7 @@ class MainActivity : AppCompatActivity(),
 //            mEmptyStateTextView.visibility = View.GONE
 
             // Show the loading indicator while new data is being fetched
-            loadingSpinner.visibility = View.VISIBLE
+            loading_spinner.isVisible = true
 
             getArticles()
         }
@@ -149,24 +142,7 @@ class MainActivity : AppCompatActivity(),
         )
 
         viewModel.loadArticles(orderBy!!, filterBy!!)
-        viewModel.getArticles().observe(this, Observer {
-            val articles: List<Article> = it
-
-            if (articles.isNotEmpty()) {
-                //this.runOnUiThread { mAdapter.notifyDataSetChanged() }
-                /* val lel = Thread(Runnable {mAdapter.notifyDataSetChanged()})
-                 lel.run()*/
-                //lel.start()
-                //Runnable { mAdapter.notifyDataSetChanged() }
-                mAdapter.addItems(articles)
-                val h = this.window.decorView.handler
-                h.post {
-                    mAdapter.notifyDataSetChanged()
-                }
-            }
-
-            loadingSpinner.visibility = View.GONE
-        })
+        loading_spinner.isVisible = false
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -186,7 +162,7 @@ class MainActivity : AppCompatActivity(),
 
     fun loadFromExternal() {
         lateinit var cachedNews: List<Article>
-        if(isWritePermissionGranted())
+        if (isWritePermissionGranted())
             cachedNews = ArticlesFileRepo.getFromExternal(this)!!
         else {
             Toast.makeText(this, " Permission to write on external was not granted ", Toast.LENGTH_LONG).show()
@@ -198,9 +174,9 @@ class MainActivity : AppCompatActivity(),
         val cachedNews: List<Article> = ArticlesFileRepo.getFromInternal(this)
 
         if (cachedNews.isEmpty())
-            Toast.makeText(this,"No local news saved", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, "No local news saved", Toast.LENGTH_LONG).show()
         else {
-            Toast.makeText(this,"Showing offline news", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, "Showing offline news", Toast.LENGTH_LONG).show()
             mAdapter.addItems(cachedNews)
         }
     }
@@ -235,7 +211,7 @@ class MainActivity : AppCompatActivity(),
     }
 
     private fun setRecyclerViewScrollListener() {
-        articlesRecycleView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+        articles_list.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
                 super.onScrollStateChanged(recyclerView, newState)
                 val totalItemCount = recyclerView.layoutManager!!.itemCount

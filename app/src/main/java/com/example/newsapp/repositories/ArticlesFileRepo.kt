@@ -25,13 +25,13 @@ object ArticlesFileRepo {
     fun getFromInternal(context: Context): List<Article> {
         var articles: MutableList<Article> = mutableListOf<Article>()
 
-        context.openFileInput(internalFileName). use {
+        context.openFileInput(internalFileName).use {
             articles.addAll(BufferedReader(it.reader()).readText().covertToArticleList())
         }
         return articles
     }
 
-    fun saveToExternal(context: Context, articles: List<Article>) : Boolean {
+    fun saveToExternal(context: Context, articles: List<Article>): Boolean {
 
         //Checking the availability state of the External Storage.
         val state = Environment.getExternalStorageState()
@@ -42,7 +42,8 @@ object ArticlesFileRepo {
         }
 
         //Create a new file that points to the root directory, with the given name:
-        val file = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
+        val file = File(
+            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
             "$externalFileName"
         )
 
@@ -64,22 +65,23 @@ object ArticlesFileRepo {
     }
 
     fun getFromExternal(context: Context): List<Article>? {
-        if(!isExternalStorageReadable())
+        if (!isExternalStorageReadable())
             return null
 
-        val file = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
+        val file = File(
+            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
             "$externalFileName"
         )
         return BufferedReader(file.reader()).readText().covertToArticleList()
     }
 
- //Checks if external storage is available for read and write
+    //Checks if external storage is available for read and write
 
     private fun isExternalStorageWritable(): Boolean {
         return Environment.getExternalStorageState() == Environment.MEDIA_MOUNTED
     }
 
- //Checks if external storage is available to at least read
+    //Checks if external storage is available to at least read
 
     private fun isExternalStorageReadable(): Boolean {
         return Environment.getExternalStorageState() in

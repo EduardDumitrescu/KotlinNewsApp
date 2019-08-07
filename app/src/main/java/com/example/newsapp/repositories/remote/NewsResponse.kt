@@ -7,13 +7,16 @@ import com.google.gson.annotations.SerializedName
 data class NewsResponse(
     @SerializedName("response")
     @Expose
-    val response: Response) {
+    val response: Response
+) {
 
-    data class Response( @SerializedName("currentPage")
-                         val currentPage: Int,
-                         @SerializedName("results")
-                         val articles: List<Article>,
-                         @SerializedName("pages")
-                         @Expose
-                         var pages: Int)
+    data class Response(
+        @SerializedName("currentPage")
+        val currentPage: Int,
+        @SerializedName("results")
+        val articles: List<Article>,
+        @SerializedName("pages")
+        @Expose
+        var pages: Int
+    )
 }

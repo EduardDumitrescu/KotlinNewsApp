@@ -24,7 +24,7 @@ class ArticlesAdapter(articleList: List<Article>, private val isAtBottom: Boolea
         private val outputDateFormat = SimpleDateFormat("yyyy-MM-dd  HH:mm", Locale.US)
     }
 
-    var articlesList: MutableList<Article> = articleList.toMutableList()
+    private var articlesList: MutableList<Article> = articleList.toMutableList()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val inflatedView: View = LayoutInflater.from(parent.context).inflate(R.layout.article, parent, false)
@@ -106,10 +106,8 @@ class ArticlesAdapter(articleList: List<Article>, private val isAtBottom: Boolea
     fun clearData() {
         for (index in (articlesList.size - 1) downTo 0) {
             articlesList.removeAt(index)
-            //notifyItemRemoved(index)
         }
-        //Runnable { notifyDataSetChanged() }
-        //notifyDataSetChanged()
+        notifyDataSetChanged()
     }
 
     fun addItems(articles: List<Article>) {
@@ -117,32 +115,7 @@ class ArticlesAdapter(articleList: List<Article>, private val isAtBottom: Boolea
             if (articles[index] in articlesList)
                 continue
             articlesList.add(articles[index])
-            //notifyItemInserted(index)
         }
-        /* //val h = Handler()
-
-          object: Handler() {
-             override fun close() {
-                 TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-             }
-
-             override fun flush() {
-                 TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-             }
-
-             override fun publish(p0: LogRecord?) {
-                 notifyDataSetChanged()
-                 TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-             }
-
-         }.run {  }
- */
-
-        /*val t = Thread { notifyDataSetChanged() }
-
-        t.run()*/
-        //Runnable { notifyDataSetChanged() }
-
-        //notifyDataSetChanged()
+        notifyDataSetChanged()
     }
 }
