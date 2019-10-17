@@ -1,100 +1,123 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content">
 
-    <ImageView
-        android:id="@+id/thumbnail"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="16dp"
-        android:layout_marginTop="16dp"
-        android:contentDescription="@string/thumbnail"
-        app:layout_constraintEnd_toStartOf="@id/title"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:src="@drawable/area51gf_meme"
-        android:layout_marginStart="16dp" />
+<layout>
 
-    <TextView
-        android:id="@+id/title"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="8dp"
-        android:layout_marginRight="16dp"
-        android:fontFamily="sans-serif-medium"
-        android:textAlignment="center"
-        android:textColor="@color/titleTextColorNewsStory"
-        android:textSize="@dimen/text_size_medium"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/thumbnail"
-        app:layout_constraintTop_toTopOf="@id/thumbnail"
-        tools:text="Title" />
+    <data>
 
-    <TextView
-        android:id="@+id/section"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:fontFamily="sans-serif-medium"
-        android:textAlignment="center"
-        android:textAllCaps="true"
-        android:textColor="@color/subtitleColor"
-        android:textSize="@dimen/text_size_small"
-        app:layout_constraintEnd_toEndOf="@id/thumbnail"
-        app:layout_constraintStart_toStartOf="@id/thumbnail"
-        app:layout_constraintTop_toBottomOf="@id/thumbnail"
-        tools:text="Section" />
+        <variable
+                name="article"
+                type="com.example.newsapp.models.Article" />
 
-    <View
-        android:layout_width="@dimen/view_dot_size"
-        android:layout_height="@dimen/view_dot_size"
-        android:layout_gravity="center"
-        android:layout_marginLeft="@dimen/dot_margin_dimension"
-        android:layout_marginRight="@dimen/dot_margin_dimension"
-        android:background="@drawable/magnitude_circle"
-        app:layout_constraintBottom_toBottomOf="@id/date"
-        app:layout_constraintEnd_toStartOf="@id/date"
-        app:layout_constraintStart_toEndOf="@id/section"
-        app:layout_constraintTop_toTopOf="@id/date" />
 
-    <TextView
-        android:id="@+id/date"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_vertical"
-        android:paddingEnd="@dimen/view_dot_size"
-        android:textColor="@color/subtitleColor"
-        android:textSize="@dimen/text_size_small"
-        app:layout_constraintEnd_toStartOf="@id/author"
-        app:layout_constraintStart_toEndOf="@id/thumbnail"
-        app:layout_constraintTop_toTopOf="@id/section"
-        tools:text="2010-03-06 16:23" />
+        <variable
+                name="mainViewModel"
+                type="com.example.newsapp.viewModels.ArticleListViewModel" />
+    </data>
 
-    <View
-        android:layout_width="@dimen/view_dot_size"
-        android:layout_height="@dimen/view_dot_size"
-        android:layout_gravity="center"
-        android:layout_marginLeft="@dimen/dot_margin_dimension"
-        android:layout_marginRight="@dimen/dot_margin_dimension"
-        android:background="@drawable/magnitude_circle"
-        app:layout_constraintBottom_toBottomOf="@id/date"
-        app:layout_constraintEnd_toStartOf="@id/author"
-        app:layout_constraintStart_toEndOf="@id/date"
-        app:layout_constraintTop_toTopOf="@id/date" />
+    <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            xmlns:tools="http://schemas.android.com/tools"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="@{() -> mainViewModel.goToNewsPage(article.url)}">
 
-    <TextView
-        android:id="@+id/author"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_vertical"
-        android:fontFamily="sans-serif-medium"
-        android:textColor="@color/subtitleColor"
-        android:textSize="@dimen/text_size_small"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/date"
-        app:layout_constraintTop_toTopOf="@id/date"
-        tools:text="Author" />
+        <ImageView
+                android:id="@+id/thumbnail"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginLeft="16dp"
+                android:layout_marginTop="16dp"
+                android:contentDescription="@string/thumbnail"
+                app:imageUrl="@{article.imgUrl}"
+                app:layout_constraintEnd_toStartOf="@id/title"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:src="@drawable/area51gf_meme" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+        <TextView
+                android:id="@+id/title"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="8dp"
+                android:layout_marginRight="16dp"
+                android:fontFamily="sans-serif-medium"
+                android:text="@{article.title}"
+                android:textAlignment="center"
+                android:textColor="@color/titleTextColorNewsStory"
+                android:textSize="@dimen/text_size_medium"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@id/thumbnail"
+                app:layout_constraintTop_toTopOf="@id/thumbnail"
+                tools:text="Title" />
+
+        <TextView
+                android:id="@+id/section"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-medium"
+                android:text="@{article.section}"
+                android:textAlignment="center"
+                android:textAllCaps="true"
+                android:textColor="@color/subtitleColor"
+                android:textSize="@dimen/text_size_small"
+                app:layout_constraintEnd_toEndOf="@id/thumbnail"
+                app:layout_constraintStart_toStartOf="@id/thumbnail"
+                app:layout_constraintTop_toBottomOf="@id/thumbnail"
+                tools:text="Section" />
+
+        <View
+                android:layout_width="@dimen/view_dot_size"
+                android:layout_height="@dimen/view_dot_size"
+                android:layout_gravity="center"
+                android:layout_marginLeft="@dimen/dot_margin_dimension"
+                android:layout_marginRight="@dimen/dot_margin_dimension"
+                android:background="@drawable/magnitude_circle"
+                app:layout_constraintBottom_toBottomOf="@id/date"
+                app:layout_constraintEnd_toStartOf="@id/date"
+                app:layout_constraintStart_toEndOf="@id/section"
+                app:layout_constraintTop_toTopOf="@id/date" />
+
+        <TextView
+                android:id="@+id/date"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:paddingEnd="@dimen/view_dot_size"
+                android:text="@{article.publicationDate}"
+                android:textColor="@color/subtitleColor"
+                android:textSize="@dimen/text_size_small"
+                app:layout_constraintEnd_toStartOf="@id/author"
+                app:layout_constraintStart_toEndOf="@id/thumbnail"
+                app:layout_constraintTop_toTopOf="@id/section"
+                tools:text="2010-03-06 16:23" />
+
+        <View
+                android:layout_width="@dimen/view_dot_size"
+                android:layout_height="@dimen/view_dot_size"
+                android:layout_gravity="center"
+                android:layout_marginLeft="@dimen/dot_margin_dimension"
+                android:layout_marginRight="@dimen/dot_margin_dimension"
+                android:background="@drawable/magnitude_circle"
+                app:layout_constraintBottom_toBottomOf="@id/date"
+                app:layout_constraintEnd_toStartOf="@id/author"
+                app:layout_constraintStart_toEndOf="@id/date"
+                app:layout_constraintTop_toTopOf="@id/date" />
+
+        <TextView
+                android:id="@+id/author"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:fontFamily="sans-serif-medium"
+                android:text="@{article.author}"
+                android:textColor="@color/subtitleColor"
+                android:textSize="@dimen/text_size_small"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@id/date"
+                app:layout_constraintTop_toTopOf="@id/date"
+                tools:text="Author" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</layout>

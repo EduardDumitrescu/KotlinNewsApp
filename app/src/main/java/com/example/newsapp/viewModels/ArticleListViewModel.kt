@@ -1,5 +1,7 @@
 package com.example.newsapp.viewModels
 
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.newsapp.models.Article
 import com.example.newsapp.repositories.ArticlesDataSource
@@ -12,6 +14,10 @@ import io.reactivex.subjects.Subject
 import java.util.concurrent.TimeUnit
 
 class ArticleListViewModel : ViewModel() {
+
+    private val _articleUrl = MutableLiveData<String>("")
+    val articleUrl: LiveData<String> = _articleUrl
+
 
     private val articleList: BehaviorSubject<List<Article>> = BehaviorSubject.create()
 
@@ -65,6 +71,10 @@ class ArticleListViewModel : ViewModel() {
     private fun resetCount() {
         this.pageNumber = 1
         this.articlesToShow = 10
+    }
+
+    fun goToNewsPage(url: String) {
+        _articleUrl.value = url
     }
 
     fun getArticles(): Observable<List<Article>> = articleList

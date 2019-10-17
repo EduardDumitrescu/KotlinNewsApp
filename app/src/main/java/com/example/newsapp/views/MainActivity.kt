@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
@@ -12,6 +13,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -37,6 +39,9 @@ class MainActivity : AppCompatActivity(),
     }
 
     private lateinit var disposable: Disposable
+
+    private lateinit var articleClickDisposable: Disposable
+
     /** Adapter for the list of articles */
     private lateinit var mAdapter: ArticlesAdapter
 
@@ -77,6 +82,8 @@ class MainActivity : AppCompatActivity(),
         disposable = viewModel.getArticles().subscribe {
             mAdapter.setArticles(it)
         }
+
+        viewModel.articleUrl.observe(this, Observer { if (it.isNotEmpty()) articleClick(it) })
 
         articles_list.layoutManager = mLayoutManager
         articles_list.adapter = mAdapter
@@ -204,6 +211,17 @@ class MainActivity : AppCompatActivity(),
         })
     }
 
+    private fun articleClick(url: String) {
+        // Convert the String URL into a URI object (to pass into the Intent constructor)
+        var articleUri: Uri? = null
+        articleUri = Uri.parse(url)
+
+        // Create a new intent to view the news story URI
+        val websiteIntent: Intent = Intent(Intent.ACTION_VIEW, articleUri)
+
+        // Send the intent to launch a new activity
+        this.startActivity(websiteIntent)
+    }
 
     override fun onDestroy() {
         super.onDestroy()
